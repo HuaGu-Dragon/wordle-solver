@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{borrow::Cow, collections::HashMap};
 
 use crate::{Correctness, DICTIONARY, Guess, Guesser};
 
@@ -31,7 +31,7 @@ impl Guesser for Allocs {
             self.remaining.retain(|word, _| last.matches(word));
         }
         if history.is_empty() {
-            return "slate".to_string();
+            return "tares".to_string();
         }
 
         let total: usize = self.remaining.values().sum();
@@ -43,11 +43,14 @@ impl Guesser for Allocs {
             for pattern in Correctness::patterns() {
                 let mut pattern_count = 0;
                 for (w, count) in self.remaining.iter() {
-                    pattern_count += if Correctness::compute(w, word) == pattern {
-                        *count
-                    } else {
-                        0
-                    };
+                    Guess {
+                        word: Cow::Borrowed(w),
+                        mask: pattern,
+                    }
+                    .matches(word)
+                    .then(|| {
+                        pattern_count += *count;
+                    });
                 }
                 if pattern_count == 0 {
                     continue;
