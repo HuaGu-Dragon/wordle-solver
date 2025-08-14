@@ -90,8 +90,8 @@ impl Correctness {
 }
 
 pub struct Guess<'a> {
-    word: Cow<'a, str>,
-    mask: [Correctness; 5],
+    pub word: Cow<'a, str>,
+    pub mask: [Correctness; 5],
 }
 impl Guess<'_> {
     fn matches(&self, word: &str) -> bool {

@@ -1,5 +1,6 @@
 use clap::{Parser, ValueEnum};
-use wordle_solver::{Guesser, Wordle};
+use std::io::Write;
+use wordle_solver::{Correctness, Guess, Guesser, Wordle};
 
 const GAMES: &str = include_str!("../answers.txt");
 
@@ -8,6 +9,10 @@ const GAMES: &str = include_str!("../answers.txt");
 struct Cli {
     #[clap(value_enum, short, long, default_value_t = Implementation::Native)]
     implementation: Implementation,
+
+    #[clap(short, long, default_value_t = false)]
+    play: bool,
+
     #[arg(short, long)]
     max: Option<usize>,
 }
@@ -23,10 +28,28 @@ fn main() {
     let cli = Cli::parse();
 
     match cli.implementation {
-        Implementation::Native => start(wordle_solver::algorithms::native::Native::new, cli.max),
-        Implementation::Allocs => start(wordle_solver::algorithms::allocs::Allocs::new, cli.max),
-        Implementation::Vexer => start(wordle_solver::algorithms::vexer::Vexer::new, cli.max),
-    }
+        Implementation::Native => {
+            if cli.play {
+                guess(wordle_solver::algorithms::native::Native::new)
+            } else {
+                start(wordle_solver::algorithms::native::Native::new, cli.max)
+            }
+        }
+        Implementation::Allocs => {
+            if cli.play {
+                guess(wordle_solver::algorithms::allocs::Allocs::new)
+            } else {
+                start(wordle_solver::algorithms::allocs::Allocs::new, cli.max)
+            }
+        }
+        Implementation::Vexer => {
+            if cli.play {
+                guess(wordle_solver::algorithms::vexer::Vexer::new)
+            } else {
+                start(wordle_solver::algorithms::vexer::Vexer::new, cli.max)
+            }
+        }
+    };
 }
 
 fn start<G: Guesser>(mut mk: impl FnMut() -> G, max: Option<usize>) {
@@ -38,5 +61,41 @@ fn start<G: Guesser>(mut mk: impl FnMut() -> G, max: Option<usize>) {
         } else {
             println!("Failed to solve {answer}");
         }
+    }
+}
+
+fn guess<G: Guesser>(mut mk: impl FnMut() -> G) {
+    for _ in 0..6 {
+        let mut history = Vec::new();
+        let mut guesser = mk();
+        let guess = guesser.guess(&history);
+
+        let mut stdout = std::io::stdout();
+        writeln!(
+        stdout,
+        "Guess: {guess}\nPlease enter the correctness pattern (C for Correct, M for Misplaced, W for Wrong):"
+    ).expect("Failed to write to stdout");
+
+        let stdin = std::io::stdin();
+        let mut pattern = String::new();
+        stdin.read_line(&mut pattern).expect("Failed to read line");
+        let mask = pattern
+            .trim()
+            .bytes()
+            .filter(|v| v.is_ascii_whitespace())
+            .map(|c| match c {
+                b'C' => Correctness::Correct,
+                b'M' => Correctness::Misplaced,
+                b'W' => Correctness::Wrong,
+                _ => panic!("Invalid character in pattern"),
+            })
+            .collect::<Vec<_>>()
+            .try_into()
+            .expect("Pattern must be 5 characters long");
+
+        history.push(Guess {
+            word: std::borrow::Cow::Owned(guess),
+            mask,
+        });
     }
 }
