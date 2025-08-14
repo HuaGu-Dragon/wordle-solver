@@ -65,9 +65,9 @@ fn start<G: Guesser>(mut mk: impl FnMut() -> G, max: Option<usize>) {
 }
 
 fn guess<G: Guesser>(mut mk: impl FnMut() -> G) {
+    let mut history = Vec::new();
+    let mut guesser = mk();
     for _ in 0..6 {
-        let mut history = Vec::new();
-        let mut guesser = mk();
         let guess = guesser.guess(&history);
 
         let mut stdout = std::io::stdout();
@@ -82,12 +82,12 @@ fn guess<G: Guesser>(mut mk: impl FnMut() -> G) {
         let mask = pattern
             .trim()
             .bytes()
-            .filter(|v| v.is_ascii_whitespace())
+            .filter(|v| !v.is_ascii_whitespace())
             .map(|c| match c {
                 b'C' => Correctness::Correct,
                 b'M' => Correctness::Misplaced,
                 b'W' => Correctness::Wrong,
-                _ => panic!("Invalid character in pattern"),
+                c => panic!("Invalid character in pattern {c}"),
             })
             .collect::<Vec<_>>()
             .try_into()
