@@ -16,6 +16,7 @@ struct Cli {
 enum Implementation {
     Native,
     Allocs,
+    Vexer,
 }
 
 fn main() {
@@ -24,6 +25,7 @@ fn main() {
     match cli.implementation {
         Implementation::Native => start(wordle_solver::algorithms::native::Native::new, cli.max),
         Implementation::Allocs => start(wordle_solver::algorithms::allocs::Allocs::new, cli.max),
+        Implementation::Vexer => start(wordle_solver::algorithms::vexer::Vexer::new, cli.max),
     }
 }
 
