@@ -4,3 +4,4 @@ pub mod native;
 pub mod once;
 pub mod precalc;
 pub mod vexer;
+pub mod weight;

@@ -24,6 +24,7 @@ enum Implementation {
     Vexer,
     Once,
     Precalc,
+    Weight,
 }
 
 fn main() {
@@ -53,6 +54,11 @@ fn main() {
         Implementation::Precalc => start(
             cli.guess,
             wordle_solver::algorithms::precalc::Precalc::new,
+            cli.max,
+        ),
+        Implementation::Weight => start(
+            cli.guess,
+            wordle_solver::algorithms::weight::Weight::new,
             cli.max,
         ),
     };
