@@ -26,6 +26,7 @@ enum Implementation {
     Precalc,
     Weight,
     Prune,
+    Cutoff,
 }
 
 fn main() {
@@ -65,6 +66,11 @@ fn main() {
         Implementation::Prune => start(
             cli.guess,
             wordle_solver::algorithms::prune::Prune::new,
+            cli.max,
+        ),
+        Implementation::Cutoff => start(
+            cli.guess,
+            wordle_solver::algorithms::cutoff::Cutoff::new,
             cli.max,
         ),
     };
