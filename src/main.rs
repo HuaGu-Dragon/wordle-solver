@@ -11,7 +11,7 @@ struct Cli {
     implementation: Implementation,
 
     #[clap(short, long, default_value_t = false)]
-    play: bool,
+    guess: bool,
 
     #[arg(short, long)]
     max: Option<usize>,
@@ -28,31 +28,33 @@ fn main() {
     let cli = Cli::parse();
 
     match cli.implementation {
-        Implementation::Native => {
-            if cli.play {
-                guess(wordle_solver::algorithms::native::Native::new)
-            } else {
-                start(wordle_solver::algorithms::native::Native::new, cli.max)
-            }
-        }
-        Implementation::Allocs => {
-            if cli.play {
-                guess(wordle_solver::algorithms::allocs::Allocs::new)
-            } else {
-                start(wordle_solver::algorithms::allocs::Allocs::new, cli.max)
-            }
-        }
-        Implementation::Vexer => {
-            if cli.play {
-                guess(wordle_solver::algorithms::vexer::Vexer::new)
-            } else {
-                start(wordle_solver::algorithms::vexer::Vexer::new, cli.max)
-            }
-        }
+        Implementation::Native => start(
+            cli.guess,
+            wordle_solver::algorithms::native::Native::new,
+            cli.max,
+        ),
+        Implementation::Allocs => start(
+            cli.guess,
+            wordle_solver::algorithms::allocs::Allocs::new,
+            cli.max,
+        ),
+        Implementation::Vexer => start(
+            cli.guess,
+            wordle_solver::algorithms::vexer::Vexer::new,
+            cli.max,
+        ),
     };
 }
 
-fn start<G: Guesser>(mut mk: impl FnMut() -> G, max: Option<usize>) {
+fn start<G: Guesser>(gus: bool, mk: impl FnMut() -> G, max: Option<usize>) {
+    if gus {
+        guess(mk);
+    } else {
+        play(mk, max);
+    }
+}
+
+fn play<G: Guesser>(mut mk: impl FnMut() -> G, max: Option<usize>) {
     let wordle = Wordle::new();
     for answer in GAMES.split_whitespace().take(max.unwrap_or(usize::MAX)) {
         let guesser = mk();
