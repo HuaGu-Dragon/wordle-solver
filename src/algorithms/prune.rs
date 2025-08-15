@@ -59,7 +59,7 @@ impl Guesser for Prune {
         let total: usize = self.remaining.iter().map(|&(_, count)| count).sum();
 
         let mut best: Option<Candidate> = None;
-        for &(word, _) in self.remaining.iter() {
+        for &(word, count) in self.remaining.iter() {
             let mut score = 0.0;
 
             let check_patterns = |pattern: &[Correctness; 5]| {
@@ -89,6 +89,8 @@ impl Guesser for Prune {
                 }
                 Cow::Owned(ref mut patterns) => patterns.retain(check_patterns),
             }
+
+            score += count as f64 / total as f64;
 
             if let Some(c) = best {
                 if score > c.score {
