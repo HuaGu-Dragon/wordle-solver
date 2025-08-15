@@ -23,6 +23,7 @@ enum Implementation {
     Allocs,
     Vexer,
     Once,
+    Precalc,
 }
 
 fn main() {
@@ -47,6 +48,11 @@ fn main() {
         Implementation::Once => start(
             cli.guess,
             wordle_solver::algorithms::once::Once::new,
+            cli.max,
+        ),
+        Implementation::Precalc => start(
+            cli.guess,
+            wordle_solver::algorithms::precalc::Precalc::new,
             cli.max,
         ),
     };
