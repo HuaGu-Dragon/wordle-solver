@@ -25,6 +25,7 @@ enum Implementation {
     Once,
     Precalc,
     Weight,
+    Prune,
 }
 
 fn main() {
@@ -59,6 +60,11 @@ fn main() {
         Implementation::Weight => start(
             cli.guess,
             wordle_solver::algorithms::weight::Weight::new,
+            cli.max,
+        ),
+        Implementation::Prune => start(
+            cli.guess,
+            wordle_solver::algorithms::prune::Prune::new,
             cli.max,
         ),
     };
