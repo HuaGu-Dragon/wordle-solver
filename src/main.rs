@@ -86,14 +86,22 @@ fn start<G: Guesser>(gus: bool, mk: impl FnMut() -> G, max: Option<usize>) {
 
 fn play<G: Guesser>(mut mk: impl FnMut() -> G, max: Option<usize>) {
     let wordle = Wordle::new();
+    let mut score = 0;
+    let mut games = 0;
     for answer in GAMES.split_whitespace().take(max.unwrap_or(usize::MAX)) {
         let guesser = mk();
         if let Some(time) = wordle.play(answer, guesser) {
+            games += 1;
+            score += time;
             println!("Solved {answer} in {time} guesses");
         } else {
             println!("Failed to solve {answer}");
         }
     }
+    println!(
+        "Average: {:.2} guesses per game",
+        score as f64 / games as f64
+    );
 }
 
 fn guess<G: Guesser>(mut mk: impl FnMut() -> G) {
