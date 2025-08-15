@@ -15,12 +15,15 @@ impl Precalc {
     pub fn new() -> Self {
         Self {
             remaining: Cow::Borrowed(INITIAL.get_or_init(|| {
-                Vec::from_iter(DICTIONARY.lines().map(|line| {
+                let mut words = Vec::from_iter(DICTIONARY.lines().map(|line| {
                     let (word, count) = line
                         .split_once(' ')
                         .expect("every line is word + space + frequency");
                     (word, count.parse().expect("frequency must be a number"))
-                }))
+                }));
+
+                words.sort_unstable_by_key(|&(_, count)| std::cmp::Reverse(count));
+                words
             })),
         }
     }
@@ -67,8 +70,10 @@ impl Guesser for Precalc {
                     let cache = MATCHES.get_or_init(|| {
                         let mut out = BTreeMap::new();
 
-                        for (word1, _) in self.remaining.iter() {
-                            for (word2, _) in self.remaining.iter() {
+                        let dictionary = &INITIAL.get().unwrap()[..512];
+
+                        for (word1, _) in dictionary.iter() {
+                            for (word2, _) in dictionary.iter() {
                                 if word2 < word1 {
                                     continue;
                                 }
